@@ -12,8 +12,9 @@ from pydub import AudioSegment
 from pydub.playback import play
 import os
 import time
+import taglib
 
-
+output_filename = "test_audio.wav"
 def speak_with_pause(text_segments, pause_ms):
     from tempfile import NamedTemporaryFile
     from pydub import AudioSegment
@@ -41,8 +42,19 @@ text_array = ['¡Hola humanos!', 'Soy Aura, la humanoide de la Facultad de Ingen
     'Un aplauso a nuestros expertos invitados.',
     '¡Espero que sigan disfrutando mucho la jornada!']
 delay_array = [100,100,100,100,100,100,100]
+
 speak_with_pause(text_array[:2], delay_array[:2])
 
-os.system(f'ffmpeg -i initial_audio.mp3 -ar 16000 -ac 1 converted_audio.wav')
+os.system('ffmpeg -i initial_audio.mp3 -ar 16000 -ac 1 converted_audio.wav')
 time.sleep(3)
-os.system(f'ffmpeg -i converted_audio.wav -af "atempo=1.2" speed_audio.wav')
+os.system(f"""ffmpeg -i converted_audio.wav -af "atempo=1.2" {output_filename}""")
+
+  
+with taglib.File(f"/home/achury/Documents/AURA/unitree_tts_aura_voice/{output_filename}", save_on_exit=True) as song:
+    song.tags['ARTIST'] = "Alba Avila" # Professor
+    song.tags['ALBUM'] = "CBU" # Class name
+    song.tags['TITLE'] = "day one week two" # day of the class week 
+    song.tags['GENRE'] = 'Class' # event 
+    song.tags['TRACKNUMBER'] = '1/1'
+    song.tags['DATE'] = '11082025' 
+    song.tags['LYRICS'] = " ".join(text_array)
