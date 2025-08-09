@@ -1,3 +1,12 @@
+"""
+@file main.py
+@author Alvaro Achury - Uniandes - UARoboticsLab
+@date 2025-08-209
+@version 1.1
+@brief TTs a partir de archivo csv en formato wav compatible con robot AURA-UnitreeG1.
+
+"""
+
 from gtts import gTTS
 from pydub import AudioSegment
 from pydub.playback import play
@@ -34,6 +43,6 @@ text_array = ['¡Hola humanos!', 'Soy Aura, la humanoide de la Facultad de Ingen
 delay_array = [100,100,100,100,100,100,100]
 speak_with_pause(text_array[:2], delay_array[:2])
 
-os.system('ffmpeg -i initial_audio.mp3 -ar 16000 -ac 1 converted_audio.wav')
+os.system(f'ffmpeg -i initial_audio.mp3 -ar 16000 -ac 1 converted_audio.wav')
 time.sleep(3)
-os.system('ffmpeg -i converted_audio.wav -af "atempo=1.2" speed_audio.wav')
+os.system(f'ffmpeg -i converted_audio.wav -af "atempo=1.2" speed_audio.wav')
