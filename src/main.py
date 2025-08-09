@@ -49,12 +49,11 @@ os.system('ffmpeg -i initial_audio.mp3 -ar 16000 -ac 1 converted_audio.wav')
 time.sleep(3)
 os.system(f"""ffmpeg -i converted_audio.wav -af "atempo=1.2" {output_filename}""")
 
-  
 with taglib.File(f"/home/achury/Documents/AURA/unitree_tts_aura_voice/{output_filename}", save_on_exit=True) as song:
     song.tags['ARTIST'] = "Alba Avila" # Professor
-    song.tags['ALBUM'] = "CBU" # Class name
-    song.tags['TITLE'] = "day one week two" # day of the class week 
-    song.tags['GENRE'] = 'Class' # event 
+    song.tags['EVENT NAME'] = "CBU" # Class name
+    song.tags['SCHEDULE'] = "day one week two" # day of the class week 
+    song.tags['TYPE'] = 'Class' # event 
     song.tags['TRACKNUMBER'] = '1/1'
     song.tags['DATE'] = '11082025' 
     song.tags['LYRICS'] = " ".join(text_array)
