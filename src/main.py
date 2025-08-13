@@ -14,8 +14,46 @@ import os
 import time
 import taglib
 import pandas as pd
-    
+
+def list_csv_files_in_directory(directory_path):
+    """
+    Lists all csv files (and directories) in a specified directory.
+
+    Args:
+        directory_path (str): The path to the directory.
+
+    Returns:
+        list: A list of strings, each representing a file or directory name.
+              Returns an empty list if the directory does not exist or is empty.
+    """
+    try:
+        # Get all entries (files and directories) in the specified path
+        entries = os.listdir(directory_path)
+        
+        # Filter for only files (optional, if you only want files and not subdirectories)
+        files_only = [entry for entry in entries if os.path.isfile(os.path.join(directory_path, entry))]
+     
+        return files_only
+
+    except FileNotFoundError:
+        print(f"Error: Directory '{directory_path}' not found.")
+        return []
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return []
+        
 def speak_with_pause(text_segments, pause_ms):
+    """
+    Generate wav file using two list arguments.
+
+    Args:
+        text_segments (list): Text to speak.
+        pause_ms (list): Delay value between text strings
+
+    Returns:
+
+    """
+
     from tempfile import NamedTemporaryFile
     from pydub import AudioSegment
     combined = AudioSegment.empty()
@@ -36,6 +74,17 @@ def speak_with_pause(text_segments, pause_ms):
     combined.export("initial_audio.mp3", format="mp3")
 
 def audio_generation(text, delay, outputfile):
+    """
+    Generate wav file using two list arguments.
+
+    Args:
+        text_segments (list): Text to speak.
+        pause_ms (list): Delay value between text strings
+
+    Returns:
+
+    """
+
     speak_with_pause(text, delay)
     os.system('ffmpeg -i initial_audio.mp3 -ar 16000 -ac 1 converted_audio.wav')
     time.sleep(3)
