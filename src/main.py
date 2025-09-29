@@ -14,6 +14,8 @@ import os
 import time
 import taglib
 import pandas as pd
+from tempfile import NamedTemporaryFile
+from pydub import AudioSegment
 
 def list_csv_files_in_directory(directory_path):
     """
@@ -54,9 +56,11 @@ def speak_with_pause(text_segments, pause_ms):
 
     """
 
-    from tempfile import NamedTemporaryFile
-    from pydub import AudioSegment
+
     combined = AudioSegment.empty()
+    if os.path.exists('initial_audio.mp3'):
+        os.remove('initial_audio.mp3')
+
     i = 0
     for segment in text_segments:
         tts = gTTS(segment, lang='es')
@@ -65,6 +69,7 @@ def speak_with_pause(text_segments, pause_ms):
             tts.save(f.name)
             audio = AudioSegment.from_file(f.name)
             print(f"*** {segment} ... {i} __ {len(text_segments)}")
+            print("Time --- ",pause_ms[i])
             if (i+1) < len(text_segments):
                 combined += audio + AudioSegment.silent(duration=pause_ms[i])
             else:
@@ -86,35 +91,68 @@ def audio_generation(text, delay, outputfile):
     """
 
     speak_with_pause(text, delay)
+    if os.path.exists('converted_audio.wav'):
+        os.remove('converted_audio.wav')
+
     os.system('ffmpeg -i initial_audio.mp3 -ar 16000 -ac 1 converted_audio.wav')
     time.sleep(3)
     os.system(f"""ffmpeg -i converted_audio.wav -af "atempo=1.2" {outputfile}""")
-
+    time.sleep(3)
     with taglib.File(f"{outputfile}", save_on_exit=True) as song:
-        song.tags['ARTIST'] = "Alba Avila" # Professor
-        song.tags['EVENT NAME'] = "CBU" # Class name
+        song.tags['ARTIST'] = "AXA" # Professor
+        song.tags['EVENT NAME'] = "AXA" # Class name
         song.tags['SCHEDULE'] = "day one week two" # day of the class week 
         song.tags['TYPE'] = 'Class' # event 
         song.tags['TRACKNUMBER'] = '1/1'
         song.tags['DATE'] = '11082025' 
         song.tags['LYRICS'] = " ".join(text)
+    time.sleep(3)
 
 def main(inputfile, outputwav):
-    df = pd.read_csv(inputfile, sep='\t')
+    df = pd.read_csv(inputfile, sep='\t', encoding='utf-8')
 
-    # text_array = ['¡Hola humanos!', 'Soy Aura, la humanoide de la Facultad de Ingeniería,',  
-    #     'me emociona ser parte de este gran Foro de Inteligencia Artificial.', 
-    #     'Tranquilos,','no vine a quitarles el trabajo, al menos no todavía.',
-    #     'Quiero darle paso a un grupo de expertos que hablarán de Analítica de datos, Inteligencia Artificial y Diseño de software.',
-    #     'Un aplauso a nuestros expertos invitados.',
-    #     '¡Espero que sigan disfrutando mucho la jornada!']
-    # delay_array = [100,100,100,100,100,100,100]
-    # audio_generation(text_array[:2], delay_array[:2], outputwav)
+    print(f"{df['Delay']}  ---  {df['Text']} ")
+    if os.path.exists(outputwav):
+        while True:
+            delete_verification = input("Would you like to replace the existing file? (Y/N)").lower()
+            if delete_verification == "y":
+                os.remove(outputwav)
+                audio_generation(df['Text'], df['Delay'], outputwav)
+                break
+            if delete_verification not in ['y', 'n']:
+                print("Invalid character!")
+    else:                
+        audio_generation(df['Text'], df['Delay'], outputwav)
 
-    audio_generation(df['Text'], df['Delay'], inputfile[:-4]+'.wav')
 
 
-output_filename = "test_audio.wav"
-inputfile = '/home/achury/Documents/AURA/unitree_tts_aura_voice/input/a_CBU_11082025_02-10.txt'
-df = pd.read_csv(inputfile)
-main(inputfile, output_filename)
+main_path = os.getcwd()
+print(main_path + '/../input/')
+input_folder_path = os.path.join(main_path, '..', 'input/')
+output_folder_path = os.path.join(main_path, '..', 'output/')
+# audio_files_path = '/home/achury/Documents/AURA/unitree_tts_aura_voice/input/ICYA/'
+
+try:
+    os.path.exists(input_folder_path)
+    folder_name = input("Enter the name of the folder containing the text files to be converted into audio... ")
+    text_folder_path = os.path.join(input_folder_path, folder_name)
+    audio_folder_path = os.path.join(output_folder_path, folder_name)
+    os.makedirs(audio_folder_path, exist_ok=True)
+    file_list = list_csv_files_in_directory(text_folder_path)
+    input(f"{file_list}")
+    for inputfile in file_list:
+        input_file_path = os.path.join(text_folder_path, inputfile)
+        output_file_path = os.path.join(audio_folder_path, inputfile[:-3] + "wav")
+        print(f"¡¡¡ {inputfile}")
+        # df = pd.read_csv(input_file_path, encoding='latin1')
+        
+        main(input_file_path, output_file_path)
+        if os.path.exists('initial_audio.mp3'):
+            os.remove('initial_audio.mp3')
+        if os.path.exists('converted_audio.wav'):
+            os.remove('converted_audio.wav')
+    # inputfile = '/home/achury/Documents/AURA/unitree_tts_aura_voice/input/a_CBU_11082025_02-10.txt'
+
+
+except:
+    print("Check that the execution location exist and that the input folder exists!")
